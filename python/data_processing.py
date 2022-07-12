@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Jul  4 13:56:14 2022
+
+@author: san
+"""
+
+
+import os
+import xarray as xr
+import pandas as pd
+
+dir_obs='../data/observation/'
+dir_model='../data/model/'
+dir_res='./result/'
+dir_figs='./figs/'
+dir_anim='./anim/'
+
+if not os.path.exists(dir_figs):
+    os.makedirs(dir_figs)
+if not os.path.exists(dir_anim):
+    os.makedirs(dir_anim)
+if not os.path.exists(dir_res):
+    os.makedirs(dir_res)
+    
+#etape 1 : initialisation
+'''
+def initialise_variables(dico):
+   
+    if dico['model_obs'] == 'WWLN':
+        infile_obs = dir_obs+'WWLLN_2010-2019.nc'
+       
+    if dico['model_obs'] == 'Blitz':
+         infile_obs = dir_obs+'Blitz_2015-2021.nc' 
+
+    if dico['model_proxy'] == 'Era5':
+        infile_model = dir_model
+        for k in range(len(dico['proxy'])):
+            infile_model = infile_model + dico['proxy'][k] + '_' 
+            print(infile_model)
+        infile_model = infile_model + str(dico['anneeDebut_model']) + '-' + str(dico['anneeFin_model']) + '.nc'
+        
+
+    return [infile_obs,infile_model]
+'''
+'''
+def controle_fenetre(dico):
+    # a changer selon le model
+    print (dico['latN']-dico['latS']/0.25 + 1  , dico['lonE']-dico['lonW']/0.25 +1 )
+'''
+def initialise_variables(dico):
+   
+    if dico['model_obs'] == 'WWLLN':
+        infile_obs = dir_obs+'WWLLN_2010-2019.nc'
+        
+    if dico['model_obs'] == 'Blitz':
+         infile_obs = dir_obs+'Blitz_2015-2021.nc' 
+
+    if dico['model_proxy'] == 'Era5':
+        infile_model = dir_model
+        for k in range(len(dico['proxy'])):
+            infile_model = infile_model + dico['proxy'][k] + '_' 
+        infile_model = infile_model + 'era5_' + str(dico['anneeDebut_model']) + '-' + str(dico['anneeFin_model']) + '.nc'
+    varname_obs = dico['model_obs'] + str(dico['resolution']) + ' deg'
+    varname_model = dico['model_proxy'] + str(dico['resolution']) + ' deg'
+    
+    return [infile_obs,infile_model,varname_obs,varname_model]
+
+
+'''
+def fusion_xarray(dico):
+    all_data=[]
+    infile_model = dir_model
+    for k in range(len(dico['proxy'])):
+        infile_model = infile_model + dico['proxy'][k] + '_' 
+    infile_model = infile_model + 'era5_'
+    for i in range(dico['anneeDebut_model'],dico['anneeFin_model']+1):
+        all_data.append(xr.open_dataset(infile_model+ str(i) + '.nc'))
+        
+    return(xr.merge(all_data))
+'''    
+def ouvre_fichier(infile):
+    return xr.open_dataset(infile)
+   
+def changement_nom_coordonnees_obs(dico,data):
+    if dico['model_obs'] == 'WWLLN':
+        return data.rename({'Time': 'time'})
+  
+def changement_nom_coordonnees_model(dico,data):
+    if dico['model_proxy'] == 'Era5':
+        
+        return data.rename({'longitude': 'lon','latitude': 'lat'})
+       
+
+def selectionDonnees(dico,data):
+    debut = str(dico['anneeDebut'])+'-01-01'
+    fin = str(dico['anneeFin'])+'-12-31'
+    dates=pd.date_range(debut,fin,freq=dico['frequence'])
+    
+    data = data.assign_coords(lon=(((data.lon + 180) % 360) - 180)).sortby('lon').sortby('lat')
+   
+    data_season = data.sel(lat=slice(dico['latS'],dico['latN'])).sel(lon=slice(dico['lonW'],dico['lonE'])).sel(time=dates)
+    lat  = data_season.lat.values
+    lon  = data_season.lon.values
+    time = data_season.time.values
+    return [time,lat,lon,data_season,dates]
+
+data_model = xr.open_dataset(dir_model +'cape_cp_era5_2018-2020.nc')
+data_obs = xr.open_dataset(dir_obs +'WWLLN_2010-2019.nc')
+
+
+
