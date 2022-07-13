@@ -62,7 +62,7 @@ def tracer(dico,data,champs):
     cb_ax = fig.add_axes([0.95, 0.1, 0.02, 0.8])
     cbar = plt.colorbar(mm, cax=cb_ax,extend='both')
     ax.coastlines(resolution='110m');
-    plt.savefig(champs+ '_resolution_' + str(resolution) +'.png' )
+    #plt.savefig(champs+ '_resolution_' + str(resolution) +'.png' )
     plt.show()
 
 '''   

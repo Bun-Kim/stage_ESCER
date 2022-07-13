@@ -52,10 +52,10 @@ print('ajustement des obs')
 print('ajustement temporel')
 temp=ajustement.resolution_temporelle_obs(base, temp)
 print('ajustement spatial')
-temp3=ajustement.resolution_spatiale_obs(base,temp,0.1)
+#temp3=ajustement.resolution_spatiale_obs(base,temp,0.1)
 
 
-[t_obs,la_obs,lo_obs,da_obs,date2_obs]=data_processing.selectionDonnees(base,temp3)
+[t_obs,la_obs,lo_obs,da_obs,date2_obs]=data_processing.selectionDonnees(base,temp  )
 
 print('ajustement des donnees pour le proxy')
 print('ajustement temporel')
@@ -67,7 +67,7 @@ temp2 = ajustement.resolution_spatiale_model(base,temp,temp1)
 
 [t_model,la_model,lo_model,da_model,date2_model]=data_processing.selectionDonnees(base,temp2)
 
-proxy= pc.proxy_calculus(base, da_model)
+proxy= pc.proxy_calculus(base, da_model) *20
 
 #attention si on ajuste sur les donnees modeles, faire une fonction pour trier les lat
 

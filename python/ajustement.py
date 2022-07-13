@@ -87,7 +87,7 @@ def resolution_spatiale_model(dico,data_obs,data_model):
     
     if test_data_a_reshape(data_obs,data_model) == 'model':
         resolution_obs= abs(data_obs.lat.values[0]-data_obs.lat.values[1])
-        resolution_obs=0.1
+        #resolution_obs=0.1
         data_regridded=[]
         
         ds_out = xr.Dataset({
@@ -103,7 +103,7 @@ def resolution_spatiale_model(dico,data_obs,data_model):
                         data_regridded.append(xe.Regridder(champsk_to_regrid,
                                               ds_out,
                                               dico['methode_spatiale'][k],
-                                              periodic=True)(champsk_to_regrid)) 
+                                              periodic=True,reuse_weights=True)(champsk_to_regrid)) 
                         
         return (xr.Dataset.merge(xr.DataArray.to_dataset(data_regridded[0]),
                                 xr.DataArray.to_dataset(data_regridded[1])))
