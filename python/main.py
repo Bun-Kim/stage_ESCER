@@ -9,7 +9,7 @@ Created on Mon Jul  4 13:56:14 2022
 import data_processing
 import ajustement
 import proxy_calculation as pc
-
+import carte
 base = {'anneeDebut':2018, 'anneeFin':2019,'anneeDebut_model':2018,
         'anneeFin_model':2020,
         'frequence':'1D', 'resolution':1, 
@@ -49,96 +49,37 @@ temp = data_processing.changement_nom_coordonnees_obs(base, temp)
 temp1 = data_processing.changement_nom_coordonnees_model(base, temp1)
 
 print('ajustement des obs')
+print('ajustement temporel')
 temp=ajustement.resolution_temporelle_obs(base, temp)
-#temp=ajustement.resolution_spatiale_obs(base,temp,temp1)
+print('ajustement spatial')
+temp3=ajustement.resolution_spatiale_obs(base,temp,0.1)
 
 
-[t_obs,la_obs,lo_obs,da_obs,date2_obs]=data_processing.selectionDonnees(base,temp)
+[t_obs,la_obs,lo_obs,da_obs,date2_obs]=data_processing.selectionDonnees(base,temp3)
 
 print('ajustement des donnees pour le proxy')
+print('ajustement temporel')
 temp1=ajustement.resolution_temporelle_model(base, temp1)
+print('ajustement spatial')
+temp2 = ajustement.resolution_spatiale_model(base,temp,temp1)
 
-temp1 = ajustement.resolution_spatiale_model(base,temp,temp1)
+#Dataset_controle_methode=ajustement.controle_resolution_spatiale_model_cape(base,temp,temp1)
 
-
-[t_model,la_model,lo_model,da_model,date2_model]=data_processing.selectionDonnees(base,temp1)
+[t_model,la_model,lo_model,da_model,date2_model]=data_processing.selectionDonnees(base,temp2)
 
 proxy= pc.proxy_calculus(base, da_model)
 
 #attention si on ajuste sur les donnees modeles, faire une fonction pour trier les lat
 
-import cartopy.feature as cfeature
-import matplotlib as mpl
-from matplotlib.colors import BoundaryNorm
-import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
-
-import numpy as np
-
-dico = base
-bounds = [base['lonW'], base['lonE'], base['latS'], base['latN']]
-
-
-
-#colbar=mpl.colors.ListedColormap(proxy)
-fig=plt.figure(figsize=(10,6), frameon=True)   
-ax = plt.subplot(111, projection=ccrs.Orthographic(central_longitude=(dico['lonW']+dico['lonE'])/2, central_latitude=(dico['latS']+dico['latN'])/2))
-
-ax.set_extent(bounds, crs=ccrs.PlateCarree())
-
-ax.add_feature(cfeature.OCEAN.with_scale('50m'))
-ax.add_feature(cfeature.LAKES.with_scale('50m'))
-ax.add_feature(cfeature.LAND.with_scale('50m'))
-ax.add_feature(cfeature.BORDERS.with_scale('50m'))
-states_provinces = cfeature.NaturalEarthFeature(
-        category='cultural',
-        name='admin_1_states_provinces_lines',
-        scale='50m',
-        facecolor='none')
-
-ax.add_feature(states_provinces, edgecolor='gray')
-
-mm = ax.pcolormesh(lo_model,\
-                   la_model,\
-                   np.mean(proxy.values,axis=0),\
-                   vmin=0,\
-                   vmax=4, \
-                   transform=ccrs.PlateCarree(),\
-                   cmap='jet' )
-ax.coastlines(resolution='110m');
-
-plt.show()
-
-############
-
-#colbar=mpl.colors.ListedColormap(proxy)
-fig=plt.figure(figsize=(10,6), frameon=True)   
-ax = plt.subplot(111, projection=ccrs.Orthographic(central_longitude=(dico['lonW']+dico['lonE'])/2, central_latitude=(dico['latS']+dico['latN'])/2))
-
-ax.set_extent(bounds, crs=ccrs.PlateCarree())
-
-ax.add_feature(cfeature.OCEAN.with_scale('50m'))
-ax.add_feature(cfeature.LAKES.with_scale('50m'))
-ax.add_feature(cfeature.LAND.with_scale('50m'))
-ax.add_feature(cfeature.BORDERS.with_scale('50m'))
-states_provinces = cfeature.NaturalEarthFeature(
-        category='cultural',
-        name='admin_1_states_provinces_lines',
-        scale='50m',
-        facecolor='none')
-
-ax.add_feature(states_provinces, edgecolor='gray')
-
-mm = ax.pcolormesh(lo_model,\
-                   la_model,\
-                   np.mean(da_obs.F.values,axis=0),\
-                   vmin=0,\
-                   vmax=60, \
-                   transform=ccrs.PlateCarree(),\
-                   cmap='jet' )
-ax.coastlines(resolution='110m');
-
-plt.show()
+###############
+#carte.trace_controle_methode_regrid(base, Dataset_controle_methode, 'cape')
 
 #####
+carte.tracer(base, proxy, 'proxy')
+carte.tracer(base,da_obs,'F')
+'''
+carte.tracer(base, temp2, 'cape')
 
+carte.tracer(base, temp1, 'cp')
+carte.tracer(base, temp2, 'cp')
+'''

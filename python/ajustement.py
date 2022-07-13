@@ -8,6 +8,15 @@ Created on Fri Jul  8 10:10:01 2022
 import xesmf as xe
 import xarray as xr
 import copy
+
+method_list = [
+    "bilinear",
+    "nearest_s2d",
+    "nearest_d2s",
+    "patch",
+]
+
+
 def resolution_temporelle_obs(dico,data):
     #transforme les data obs en des data de pas de temps dico['frequence']
   if dico['method_obs'] == 'max':
@@ -41,8 +50,8 @@ def resolution_temporelle_model(dico2,data):
 
 def test_data_a_reshape(data_obs,data_model):
     'retourne le tableau de donnees a ajuster, celui avec la plus petite resolution'
-    resolution_obs= abs(data_obs.lat[0]-data_obs.lat[1])
-    resolution_model= abs(data_model.lat[0]-data_model.lat[1])
+    resolution_obs= abs(data_obs.lat.values[0]-data_obs.lat.values[1])
+    resolution_model= abs(data_model.lat.values[0]-data_model.lat.values[1])
     
     if resolution_obs < resolution_model :
         return ('obs')
@@ -77,7 +86,8 @@ import numpy as np
 def resolution_spatiale_model(dico,data_obs,data_model):
     
     if test_data_a_reshape(data_obs,data_model) == 'model':
-        resolution_obs= abs(data_obs.lat[0]-data_obs.lat[1])
+        resolution_obs= abs(data_obs.lat.values[0]-data_obs.lat.values[1])
+        resolution_obs=0.1
         data_regridded=[]
         
         ds_out = xr.Dataset({
@@ -99,16 +109,63 @@ def resolution_spatiale_model(dico,data_obs,data_model):
                                 xr.DataArray.to_dataset(data_regridded[1])))
     else:
         return data_model
+def resolution_spatiale_obs(dico,data,resolution):
+    
 
+        data_regridded=[]
+        
+        ds_out = xr.Dataset({
+        "lat": (["lat"], np.arange(dico['latS'], dico['latN'], resolution)),
+        "lon": (["lon"], np.arange(dico['lonW'], dico['lonE'], resolution)),})
+
+        
+        
+        
+        champs_to_regrid= data['F']
+                       
+        data_regridded.append(xe.Regridder(champs_to_regrid,
+                                              ds_out,
+                                              'bilinear',
+                                              periodic=True)(champs_to_regrid)) 
+                        
+        return xr.DataArray.to_dataset(data_regridded[0])
+   
+'''
 def resolution_spatiale_obs(dico,data_obs,data_model):
     
     if test_data_a_reshape(data_obs,data_model) == 'obs':
         return xe.Regridder(data_obs,data_model[dico['proxy'][0]],'conservative',periodic =True)
     else:
         return data_obs
+'''
 
-
+def controle_resolution_spatiale_model_cape(dico,data_obs,data_model):
+     Dataset=[]
+     if test_data_a_reshape(data_obs,data_model) == 'model':
+         resolution_obs= abs(data_obs.lat.values[0]-data_obs.lat.values[1])
+         
+         for method in method_list:
+             print(method)
+             data_regridded=[]
+             
+             ds_out = xr.Dataset({
+             "lat": (["lat"], np.arange(dico['latS'], dico['latN'], resolution_obs)),
+             "lon": (["lon"], np.arange(dico['lonW'], dico['lonE'], resolution_obs)),})
     
+             
+             
+            
+             champsk_to_regrid= data_model['cape']
+                             
+             data_regridded.append(xe.Regridder(champsk_to_regrid,
+                                                   ds_out,
+                                                   method,
+                                                   periodic=True)(champsk_to_regrid)) 
+            
+             
+             Dataset.append(xr.DataArray.to_dataset(data_regridded[0]))
+         return Dataset
+   
     
 
 
