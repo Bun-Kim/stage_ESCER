@@ -10,6 +10,7 @@ import data_processing
 import ajustement
 import proxy_calculation as pc
 import carte
+
 base = {'anneeDebut':2018, 'anneeFin':2019,'anneeDebut_model':2018,
         'anneeFin_model':2020,
         'frequence':'1D', 'resolution':1, 
@@ -18,6 +19,8 @@ base = {'anneeDebut':2018, 'anneeFin':2019,'anneeDebut_model':2018,
         'latN':90,'lonW':-150,'lonE':-50,'method_obs':'max',
         'methode_temporelle_proxy':['max','sum'],
         'methode_spatiale_proxy':['mean','mean'],'methode_proxy':'mul','methode_spatiale':['bilinear','bilinear']}
+
+
 
 #etape 1 : initialisation
 infile0_obs=[]
@@ -75,11 +78,11 @@ proxy= pc.proxy_calculus(base, da_model) *20
 #carte.trace_controle_methode_regrid(base, Dataset_controle_methode, 'cape')
 
 #####
-carte.tracer(base, proxy, 'proxy')
-carte.tracer(base,da_obs,'F')
-'''
-carte.tracer(base, temp2, 'cape')
+carte.tracer(base, proxy/10000, 'proxy')
+carte.tracer(base,da_obs/(100*100),'F')
 
-carte.tracer(base, temp1, 'cp')
-carte.tracer(base, temp2, 'cp')
-'''
+####
+import numpy as np
+mois=[]
+for i in range(1,13):
+        mois.append(np.any([date2_model.month==i],axis=0))

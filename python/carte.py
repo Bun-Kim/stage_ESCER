@@ -54,15 +54,16 @@ def tracer(dico,data,champs):
                        vmax=np.mean(data[champs].values)*10, \
                        transform=ccrs.PlateCarree(),\
                        cmap='jet' )
-    ax.contour(data.lon.values, data.lat.values, np.mean(data[champs].values,axis=0), levels=clevs, colors='black', linewidths=1, transform=ccrs.PlateCarree())
+    #ax.contour(data.lon.values, data.lat.values, np.mean(data[champs].values,axis=0), levels=clevs, colors='black', linewidths=1, transform=ccrs.PlateCarree())
     
     
     print(np.mean(data[champs].values)*10)
     
     cb_ax = fig.add_axes([0.95, 0.1, 0.02, 0.8])
     cbar = plt.colorbar(mm, cax=cb_ax,extend='both')
+    cbar.set_label("par km**2 par jour",horizontalalignment='center',rotation=90)
     ax.coastlines(resolution='110m');
-    #plt.savefig(champs+ '_resolution_' + str(resolution) +'.png' )
+    plt.savefig(champs+ '_resolution_' + str(resolution) +'.png' )
     plt.show()
 
 '''   
