@@ -109,7 +109,7 @@ def resolution_spatiale_model(dico,data_obs,data_model):
                                 xr.DataArray.to_dataset(data_regridded[1])))
     else:
         return data_model
-def resolution_spatiale_obs(dico,data,resolution):
+def resolution_spatiale_obs(dico,data,champs,resolution):
     
 
         data_regridded=[]
@@ -121,7 +121,7 @@ def resolution_spatiale_obs(dico,data,resolution):
         
         
         
-        champs_to_regrid= data['F']
+        champs_to_regrid= data[champs]
                        
         data_regridded.append(xe.Regridder(champs_to_regrid,
                                               ds_out,

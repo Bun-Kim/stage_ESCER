@@ -10,6 +10,7 @@ import data_processing
 import ajustement
 import proxy_calculation as pc
 import carte
+import statistiques
 
 base = {'anneeDebut':2018, 'anneeFin':2019,'anneeDebut_model':2018,
         'anneeFin_model':2020,
@@ -77,12 +78,65 @@ proxy= pc.proxy_calculus(base, da_model) *20
 ###############
 #carte.trace_controle_methode_regrid(base, Dataset_controle_methode, 'cape')
 
-#####
+
+
 carte.tracer(base, proxy/10000, 'proxy')
-carte.tracer(base,da_obs/(100*100),'F')
+carte.tracer(base, da_obs/(100*100),'F')
+
+import numpy as np
+
+F_values= da_obs.F.values/(100*100)
+proxy_values = proxy.proxy.values/10000
+
+F_mean_annuel= np.mean(da_obs.F.values,axis=0)/(100*100)
+proxy_mean_annuel = np.mean(proxy.proxy.values,axis = 0)/10000
+
+
+##############
+#attention application du mask tres couteuse
+#carte.tracer(base, data_processing.domaine_canada(proxy/10000), 'proxy')
+#carte.tracer(base, data_processing.domaine_canada(da_obs/(100*100)),'F')
 
 ####
+#saison = {'DJF','MAM','JJA','SON'}
+DJF_dataset_obs = statistiques.data_saison(da_obs/(100*100), 'F', 'DJF', date2_obs, lo_obs, la_obs)
+DJF_dataset_proxy = statistiques.data_saison(0.39*proxy/10000, 'proxy', 'DJF', date2_obs, lo_obs, la_obs)
+
+MAM_dataset_obs = statistiques.data_saison(da_obs/(100*100), 'F', 'MAM', date2_obs, lo_obs, la_obs)
+MAM_dataset_proxy = statistiques.data_saison(0.39*proxy/10000, 'proxy', 'MAM', date2_obs, lo_obs, la_obs)
+
+JJA_dataset_obs = statistiques.data_saison(da_obs/(100*100), 'F', 'JJA', date2_obs, lo_obs, la_obs)
+JJA_dataset_proxy = statistiques.data_saison(0.39*proxy/10000, 'proxy', 'JJA', date2_obs, lo_obs, la_obs)
+
+SON_dataset_obs = statistiques.data_saison(da_obs/(100*100), 'F', 'SON', date2_obs, lo_obs, la_obs)
+SON_dataset_proxy = statistiques.data_saison(0.39*proxy/10000, 'proxy', 'SON', date2_obs, lo_obs, la_obs)
+
+#saison_dataset_obs names = {'DJF_F','MAM_F','JJA_F','SON_F'}
+#saison_dataset_proxy names = {'DJF_proxy','MAM_proxy','JJA_proxy','SON_proxy'}
+carte.tracer_saison(base, DJF_dataset_obs, "DJF_F")
+carte.tracer_saison(base, DJF_dataset_proxy, "DJF_proxy")
+
+carte.tracer_saison(base, MAM_dataset_obs, "MAM_F")
+carte.tracer_saison(base, MAM_dataset_proxy, "MAM_proxy")
+
+carte.tracer_saison(base, JJA_dataset_obs, "JJA_F")
+carte.tracer_saison(base, JJA_dataset_proxy, "JJA_proxy")
+
+carte.tracer_saison(base, SON_dataset_obs, "SON_F")
+carte.tracer_saison(base, SON_dataset_proxy, "SON_proxy")
+'''
+import xarray as xr
 import numpy as np
-mois=[]
-for i in range(1,13):
-        mois.append(np.any([date2_model.month==i],axis=0))
+mask = xr.open_mfdataset('ERA5_mask_Canadian_timezone_ESRI_v4.nc')
+#mask = mask.rename({'longitude': 'lon','latitude': 'lat'})
+
+
+DJF_dataset_obs=DJF_dataset_obs.where(mask.region > 0 )
+carte.tracer_saison(base, DJF_dataset_obs, "DJF_F")
+'''
+#mask_array=np.asarray(mask.region.values)
+#mask_dataaray=xr.DataArray(mask_array)
+#mask_dataset=xr.DataArray.to_dataset(mask_dataaray,name='region')
+#mask_dataset=mask_dataset.assign_coords({'lat' : mask.latitude.values, 'lon' : mask.longitude.values})
+#mask_regridded = ajustement.resolution_spatiale_obs(base, mask_dataset,'region', 1)
+
