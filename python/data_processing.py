@@ -25,30 +25,12 @@ if not os.path.exists(dir_res):
     os.makedirs(dir_res)
     
 #etape 1 : initialisation
-'''
-def initialise_variables(dico):
-   
-    if dico['model_obs'] == 'WWLN':
-        infile_obs = dir_obs+'WWLLN_2010-2019.nc'
-       
-    if dico['model_obs'] == 'Blitz':
-         infile_obs = dir_obs+'Blitz_2015-2021.nc' 
 
-    if dico['model_proxy'] == 'Era5':
-        infile_model = dir_model
-        for k in range(len(dico['proxy'])):
-            infile_model = infile_model + dico['proxy'][k] + '_' 
-            print(infile_model)
-        infile_model = infile_model + str(dico['anneeDebut_model']) + '-' + str(dico['anneeFin_model']) + '.nc'
-        
 
-    return [infile_obs,infile_model]
-'''
-'''
-def controle_fenetre(dico):
-    # a changer selon le model
-    print (dico['latN']-dico['latS']/0.25 + 1  , dico['lonE']-dico['lonW']/0.25 +1 )
-'''
+def mask_canada(dataset):
+    
+    mask = xr.open_mfdataset('ERA5_mask_Canadian_timezone_ESRI_v4.nc')
+    return dataset.where(mask.region>0)
 def initialise_variables(dico):
    
     if dico['model_obs'] == 'WWLLN':
@@ -98,8 +80,9 @@ def selectionDonnees(dico,data):
     fin = str(dico['anneeFin'])+'-12-31'
     dates=pd.date_range(debut,fin,freq=dico['frequence'])
     
-    data = data.assign_coords(lon=(((data.lon + 180) % 360) - 180)).sortby('lon').sortby('lat')
+    #data = data.assign_coords(lon=(((data.lon + 180) % 360) - 180)).sortby('lon').sortby('lat')
    
+    data_season = data.sel(time=dates)
     data_season = data.sel(lat=slice(dico['latS'],dico['latN'])).sel(lon=slice(dico['lonW'],dico['lonE'])).sel(time=dates)
     lat  = data_season.lat.values
     lon  = data_season.lon.values

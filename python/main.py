@@ -40,6 +40,7 @@ nom_fichier=[]
 
 
 a,b,c,d= data_processing.initialise_variables(base)
+#b='../data/model/cape_cp_era5_2018-2020_1.nc'
 infile0_obs.append(a)
 infile0_model.append(b)
 varname_obs.append(c)
@@ -49,8 +50,15 @@ print('ouverture des fichiers')
 
 temp = data_processing.ouvre_fichier(a)
 temp1 = data_processing.ouvre_fichier(b)
+
+#print('ajustement mask')
+#temp1 = data_processing.mask_canada(temp1)
+
 temp = data_processing.changement_nom_coordonnees_obs(base, temp)
 temp1 = data_processing.changement_nom_coordonnees_model(base, temp1)
+
+
+
 
 print('ajustement des obs')
 print('ajustement temporel')
@@ -60,6 +68,8 @@ print('ajustement spatial')
 
 
 [t_obs,la_obs,lo_obs,da_obs,date2_obs]=data_processing.selectionDonnees(base,temp  )
+
+
 
 print('ajustement des donnees pour le proxy')
 print('ajustement temporel')
@@ -78,10 +88,55 @@ proxy= pc.proxy_calculus(base, da_model) *20
 ###############
 #carte.trace_controle_methode_regrid(base, Dataset_controle_methode, 'cape')
 
-
+#proxy = proxy.where(proxy.proxy<10)
 
 carte.tracer(base, proxy/10000, 'proxy')
 carte.tracer(base, da_obs/(100*100),'F')
+
+
+####################3
+
+from netCDF4 import Dataset
+infile1 = '../data/observation/F.nc'
+da_obs.to_netcdf(infile1)
+
+infile2='../data/model/proxy.nc'
+proxy.to_netcdf(infile2)
+
+filename = infile1
+ncin = Dataset(filename, 'r')
+lo_obs = ncin.variables['lon'][:]
+la_obs = ncin.variables['lat'][:]
+t_obs = ncin.variables['time'][:]
+da_obs.F.values = ncin.variables['F'][:]
+ncin.close()
+
+filename = infile2
+ncin = Dataset(filename, 'r')
+lo_model = ncin.variables['lon'][:]
+la_model = ncin.variables['lat'][:]
+t_model = ncin.variables['time'][:]
+proxy.proxy.values = ncin.variables['proxy'][:]
+ncin.close()
+##############
+
+A= data_processing.ouvre_fichier(infile2
+                                 )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 import numpy as np
 
